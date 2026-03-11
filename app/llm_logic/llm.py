@@ -43,10 +43,18 @@ class Slide(BaseModel):
 	speaker_notes: Optional[str] = Field(default=None, description="Speaker notes for this slide, if requested")
 	image_query: Optional[str] = Field(default=None, description="Short image search query for this slide, if images are requested")
 
+class SlideTheme(BaseModel):
+	background_color_hex: str = Field(description="Background color for all slides as a hex string without '#', e.g. '1A1A2E'")
+	accent_color_hex: str = Field(description="Accent color for slide titles and highlights as a hex string without '#', e.g. '4FC3F7'")
+	text_color_hex: str = Field(description="Main text color for bullet points as a hex string without '#', e.g. 'FFFFFF'")
+	theme_name: str = Field(description="A short descriptive name for the theme, e.g. 'Dark Ocean' or 'Warm Sunset'")
+
 
 class PresentationOutput(BaseModel):
 	title: str = Field(description="The main title of the presentation")
 	slides: List[Slide] = Field(description="All slides of the presentation, ordered by slide number")
+	theme: SlideTheme = Field(description="The visual color theme for the entire presentation")
+
 
 
 def build_prompt(presentation: PresentationPrompt) -> str:
@@ -68,9 +76,11 @@ Instructions:
 {"- Add speaker notes for every slide." if presentation.generate_speaker_notes else "- Do not include speaker notes."}
 {"- For each slide, provide a short image search query (in English) in the 'image_query' field." if presentation.include_images else "- Leave 'image_query' empty."}
 - Respond in {presentation.language}.
+- Choose a visually appealing color theme that fits the topic and tone. Provide hex color values (without '#') for background, accent (titles), and text colors.
 - Return structured JSON output matching the required schema.
 """.strip()
 	return prompt
+
 
 
 if __name__ == "__main__":
