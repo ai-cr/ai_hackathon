@@ -1,5 +1,4 @@
 """Configuration module for loading environment variables."""
-
 from pydantic_settings import BaseSettings
 from pydantic import SecretStr
 
