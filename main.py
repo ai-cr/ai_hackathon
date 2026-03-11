@@ -2,16 +2,15 @@ from app.frontend.app import app
 
 
 from app.frontend.presentation_model import PresentationPrompt, OptionalMetadata
-from config import get_config
+from app.generate_pp import generate_ppt
+from app.llm_logic.llm import get_presentation_text
 
 from datetime import date
+
 
 if __name__ == "__main__":
     app()
 
-
-    # config = get_config()
-    # print(config)
 
     entry = PresentationPrompt(
 	    topic="Einführung in Künstliche Intelligenz",
@@ -28,5 +27,5 @@ if __name__ == "__main__":
 	    generate_speaker_notes=True,
 	    language="German",
     )
-
-    print(entry)
+    prompt = get_presentation_text(entry)
+    generate_ppt(prompt)
