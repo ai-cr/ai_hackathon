@@ -1,8 +1,13 @@
 """PowerPoint Slide Generator - Streamlit Frontend"""
 
+from pprint import pprint
+
 import streamlit as st
 from pydantic import ValidationError
 from app.frontend.form_state import FormState, init_form_state
+from app.frontend.generate_ppt import generate_presentation
+from app.llm_logic.llm import PresentationOutput
+from app.llm_logic.unsplash_images import get_unsplash_image
 
 
 def render_sidebar(form_state: FormState) -> None:
@@ -133,22 +138,32 @@ def handle_generation(form_state: FormState) -> None:
             st.session_state['validated_model'] = validated_model
             
             with st.spinner("✨ Generating your presentation..."):
-                # Placeholder for actual generation logic
-                import time
-                time.sleep(2)  # Simulate processing
-                
-                # You can access the validated model like:
-                # prompt_string = validated_model.to_prompt_string()
-                # Or use validated_model.model_dump() to pass to your LLM
-                
-                # Store generation state
+                # try:
+                print("Generating Presentation")
+                models = [
+                    "Gemini 3.1 Pro",
+                    "gemini-2.5-pro",
+                    "gemini-2.5-flash",
+                    "Gemini-2-flash"
+                ]
+                for model in models:
+                    print("using model: ", model)
+                    try:
+                        presentation = generate_presentation(form_state.to_pydantic_model(), model)
+                    except Exception as e:
+                        print("Error on gen: ", e)
+
+                st.session_state["generated_presentation"] = presentation
                 st.session_state['generated'] = True
+
+                pprint(presentation.model_dump())
+
                 
             st.success(f"✅ Generated {validated_model.number_of_slides} slides for '{validated_model.topic}'!")
             
             # Display the validated form data
-            with st.expander("📋 View Form Data"):
-                st.json(validated_model.model_dump(mode='json'))
+            # with st.expander("📋 View Form Data"):
+            #     st.json(validated_model.model_dump(mode='json'))
                 
         except ValidationError as e:
             st.error("⚠️ Please fix the following errors:")
@@ -159,27 +174,30 @@ def handle_generation(form_state: FormState) -> None:
 
 def render_slides_preview(form_state: FormState) -> None:
     """Render the generated slides preview section"""
-    if not st.session_state.get('generated', False):
+
+    presentation: PresentationOutput = st.session_state.get('generated_presentation')
+
+    if not st.session_state.get('generated', False) or presentation is None:
         return
-    
+
+
     st.divider()
     st.header("📄 Generated Slides Preview")
     
-    validated_model = st.session_state.get('validated_model')
     
     # Tabs for different views
     tab1, tab2, tab3 = st.tabs(["📊 Slides", "📝 Outline", "🎤 Speaker Notes"])
     
     with tab1:
         st.info("Slide previews will appear here")
-        # Placeholder for slide previews
-        num_preview_slides = min(4, validated_model.number_of_slides if validated_model else 3)
-        for i in range(1, num_preview_slides + 1):
+
+        for i, slide in enumerate(presentation.slides): 
             with st.container():
-                st.subheader(f"Slide {i}")
-                st.markdown(f"**Title:** Sample Slide Title {i}")
-                st.markdown("Content preview will appear here...")
-                st.markdown("---")
+                st.subheader(f"Slide {i + 1}")
+                st.markdown(f"**Title:**  {slide.slide_title}")
+                for bp in slide.bullet_points: 
+                    st.markdown(f"- {bp}")
+                st.image(get_unsplash_image(slide.image_query))
     
     with tab2:
         st.markdown("""
@@ -201,9 +219,13 @@ def render_slides_preview(form_state: FormState) -> None:
         if form_state.generate_speaker_notes:
             st.markdown("### Speaker Notes")
             st.markdown("Detailed speaker notes for each slide will appear here...")
+            for i, slide in enumerate(presentation.slides):
+                st.markdown(f'Slide: {i + 1}')
+                st.markdown(slide.speaker_notes)
+
+
         else:
             st.info("Speaker notes generation is disabled. Enable in settings.")
-
 
 def render_footer() -> None:
     """Render the page footer"""
