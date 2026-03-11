@@ -1,4 +1,4 @@
-from app.frontend.presentation_model import PresetationPrompt
+from app.frontend.presentation_model import PresentationPrompt
 
 import os
 import json

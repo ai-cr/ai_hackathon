@@ -11,7 +11,7 @@ class OptionalMetadata(BaseModel):
     presentation_date: date
 
 
-class PresetationPrompt(BaseModel):
+class PresentationPrompt(BaseModel):
     """
     The main model that describes the content of a 
     presentation prompt
