@@ -176,6 +176,7 @@ def handle_generation(form_state: FormState) -> None:
                     print("using model: ", model)
                     try:
                         presentation = generate_presentation(form_state.to_pydantic_model(), model)
+                        break
                     except Exception as e:
                         print("Error on gen: ", e)
 
