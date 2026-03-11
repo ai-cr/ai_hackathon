@@ -1,14 +1,14 @@
 from datetime import date
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
 
 class OptionalMetadata(BaseModel):
     """Optional metadata for presentation generation"""
-    author_name: str 
-    company_organization: str  # name of company or org
-    presentation_date: date
+    author_name: Optional[str] = None
+    company_organization: Optional[str] = None  # name of company or org
+    presentation_date: Optional[date] = None
 
 
 class PresentationPrompt(BaseModel):
