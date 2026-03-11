@@ -1,10 +1,10 @@
 # AI PowerPoint Generator
 
-Project for the AI Hackathon - Submited by Team Spezi
+Project for the AI Hackathon - Submitted by Team Spezi
 
 # To Start
 
-install all dependencies from requirements.txt
+install all dependencies from requirements.txt, e.g. via `pip install -r requirements.txt`
 
 create a .env file with:
 ```
