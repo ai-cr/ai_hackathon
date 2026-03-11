@@ -1,10 +1,14 @@
+from app.frontend.app import app
+
+
 from app.frontend.presentation_model import PresentationPrompt, OptionalMetadata
 from config import get_config
 
 from datetime import date
 
 if __name__ == "__main__":
-    print("hello world")
+    app()
+
 
     # config = get_config()
     # print(config)
