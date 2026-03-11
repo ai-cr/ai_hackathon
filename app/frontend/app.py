@@ -136,22 +136,16 @@ def handle_generation(form_state: FormState) -> None:
     
     with col_gen2:
         print("show button down") 
-        presentation_output = st.session_state["generated_presentation"]
-        generated = st.session_state['generated']
-        ppt_buffer = st.session_state["ppt_buffer"]
-        show_btn = st.session_state.show_down_btn
-        validated_model =  st.session_state['validated_model'] 
+        presentation_output = st.session_state.get("generated_presentation", None)
+        generated = st.session_state.get('generated', False)
+        ppt_buffer = st.session_state.get("ppt_buffer", None)
+        show_btn = st.session_state.get('show_down_btn', False)
+        validated_model = st.session_state.get('validated_model', None)
 
-        print("show btn: ", show_btn)
         if validated_model:
             filename = f"{validated_model.topic[:30].replace(' ', '_')}_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}.pptx"
         else:
             filename = "test"
-
-        print(filename)
-        print(presentation_output)
-        print(generated)
-        print("ppt buffer is none : ", ppt_buffer is None)
 
         if ppt_buffer is not None:
             st.download_button(
@@ -163,58 +157,9 @@ def handle_generation(form_state: FormState) -> None:
                 use_container_width=True
             )
         else:
-            st.markdown("verkackt")
+            print("not showing down button")
 
-
-
-
-
-        # generated = st.session_state.get('generated', False)
-        # print("Generated: ", generated)
-        # if generated:
-        #     presentation = st.session_state.get('generated_presentation')
-        #     validated_model = st.session_state.get('validated_model')
-
-        #     print("button show: ", presentation and validated_model)
-
-        #     show = st.session_state.show_down_btn
-        #     print("button show:: ", show)
-        #     if show:
-        #         # Generate PPT only once and cache it
-        #         if 'ppt_buffer' not in st.session_state:
-        #             print("generating ppt new becuase ppt buffer empty")
-        #             try:
-        #                 print("Generating PPT file...")
-        #                 prs = generate_ppt(presentation, validated_model)
-                        
-        #                 # Save to BytesIO buffer
-        #                 ppt_buffer = BytesIO()
-        #                 prs.save(ppt_buffer)
-        #                 ppt_buffer.seek(0)
-                        
-        #                 # Cache the buffer in session state
-        #                 st.session_state['ppt_buffer'] = ppt_buffer
-        #                 print("PPT file cached successfully")
-        #             except Exception as e:
-        #                 print(f"Error generating PPT: {e}")
-        #                 st.error(f"Failed to generate PPT file: {e}")
-        #                 st.session_state['ppt_buffer'] = None
-                
-        #         # Show download button if PPT was generated successfully
-        #         if st.session_state.get('ppt_buffer'):
-        #             print("ppt buffer is already there")
-        #             filename = f"{validated_model.topic[:30].replace(' ', '_')}_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}.pptx"
-                    
-        #             st.download_button(
-        #                 label="📥 Download PPTX",
-        #                 data=st.session_state['ppt_buffer'],
-        #                 file_name=filename,
-        #                 mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        #                 type="secondary",
-        #                 use_container_width=True
-        #             )
-
-    
+      
     # Handle generation
     if generate_btn:
         try:
@@ -232,7 +177,9 @@ def handle_generation(form_state: FormState) -> None:
                 print("Generating Presentation")
                 models = [
                     # "gemini-3.1-pro-preview",
-                    "gemini-2.5-pro",
+                    # "gemini-3.1-flash-lite-preview",
+                    # "gemini-2.5-pro",
+                    "gemini-2.5-flash-lite", # budget
                     "gemini-2.5-flash",
                     "Gemini-2-flash"
                 ]
