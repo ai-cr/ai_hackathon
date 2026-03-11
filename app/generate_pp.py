@@ -17,7 +17,7 @@ SLIDE_HEIGHT = Inches(7.5)
 
 IMG_WIDTH  = Inches(5.5)
 MARGIN     = Inches(0.3)
-FONT_SIZE  = Pt(14)
+FONT_SIZE  = Pt(15)
 
 
 def hex_to_rgb(hex_str: str) -> RGBColor:
@@ -147,6 +147,9 @@ def generate_ppt(prompt: PresentationOutput, presentation_prompt: PresentationPr
             run = p.runs[0]
             run.font.size = FONT_SIZE
             run.font.color.rgb = text_color
+            # Empty line after each bullet
+            p_space = tf_bullets.add_paragraph()
+            p_space.text = ""
 
         # Speaker notes → only in the PowerPoint notes pane (visible in presenter view)
         if slide_data.speaker_notes:

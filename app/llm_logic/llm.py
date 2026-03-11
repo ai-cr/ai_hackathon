@@ -77,6 +77,7 @@ Instructions:
 {"- For each slide, provide a short image search query (in English) in the 'image_query' field." if presentation.include_images else "- Leave 'image_query' empty."}
 - Respond in {presentation.language}.
 - Choose a visually appealing color theme that fits the topic and tone. Provide hex color values (without '#') for background, accent (titles), and text colors.
+- Use plain text, so no formatting like markdown is required.
 - Return structured JSON output matching the required schema.
 """.strip()
 	return prompt
