@@ -1,20 +1,42 @@
-import os
+from app.frontend.presentation_model import PresetationPrompt
 
-import requests
+import os
+import json
 import dotenv
 dotenv.load_dotenv()
-import google.generativeai as genai
-genai.configure(api_key="YOUR_API_KEY_HERE")
+
+from google import genai
+from google.genai import types
+
+CLIENT = genai.Client(api_key=os.getenv("GOOGLE_GEMINI_API_KEY"))
 
 
-# def call_gemini_api(prompt, api_key):
-# 	headers = {"Authorization": f"Bearer {api_key}"}
-# 	payload = {"text": prompt}
-# 	response = requests.post("https://api.gemini.ai/generate", json=payload, headers=headers)
-# 	return response.json()
+def get_llm_response(prompt, model="gemini-3-pro-preview"):
+	response = CLIENT.models.generate_content(
+		model=model,
+		contents=[
+			prompt
+		],
+		config=types.GenerateContentConfig(
+			response_mime_type="application/json",
+			response_schema=PresetationPrompt,
+			temperature=1,
+			top_p=0.95,
+			top_k=40,
+			max_output_tokens=32000
+		)
+	)
+	if response.text:
+		return json.loads(response.text)
+	elif response.parsed:
+		return response.parsed
+	else:
+		return {"error": "No response text generated"}
 
-def get_llm_response(prompt, model="gemini-3.1"):
-	model = genai.GenerativeModel(model)
-	response = model.generate_content(prompt)
-	print(response.text)
-	return response["candidates"][0]["content"]["parts"][0]["text"]
+
+# def get_response_schema():
+# 	return {
+#         "type": "OBJECT",
+#         "properties": {field: {"type": "STRING"} for field in REQUIRED_FIELDS},
+#         "required": REQUIRED_FIELDS
+#     }

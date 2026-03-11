@@ -29,4 +29,4 @@ class PresetationPrompt(BaseModel):
 
     generate_speaker_notes: bool
 
-    language = str | Literal["English"]
+    language : str | Literal["English"]
