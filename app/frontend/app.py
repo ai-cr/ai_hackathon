@@ -128,9 +128,8 @@ def handle_generation(form_state: FormState) -> None:
     with col_gen2:
         if st.session_state.get('generated', False):
             presentation = st.session_state.get('generated_presentation')
-            validated_model = st.session_state.get('validated_model')
-            
-            if presentation and validated_model:
+            validated_model = form_state.to_pydantic_model() 
+            if presentation:
                 print("ready to download")
                 # Generate the PPT file in memory
                 prs = generate_ppt(presentation, validated_model)
