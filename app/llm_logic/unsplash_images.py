@@ -16,18 +16,31 @@ headers = {
 }
 
 def get_unsplash_image(query, retries=10):
+	if not query:
+		return None
+		
 	params = {
 	 "query": query,
 	 "per_page": 1
 	}
-	print(query)
+	print(f"Fetching image for: {query}")
 	for _ in range(retries):
 		try:
-			response = requests.get(url, headers=headers, params=params)
-			return response.json()["results"][0]["urls"]["regular"]
+			response = requests.get(url, headers=headers, params=params, timeout=5)
+			response.raise_for_status()
+			data = response.json()
+			
+			if data.get("results") and len(data["results"]) > 0:
+				return data["results"][0]["urls"]["regular"]
+			else:
+				print(f"No results found for query: {query}")
+				return None
 		except Exception as e:
-			print(f"Error fetching image: {e}")
+			print(f"Error fetching image for '{query}': {e}")
 			continue
+	
+	print(f"Failed to fetch image after {retries} retries")
+	return None
 
 def get_image_object(image_url: str) -> BytesIO:
 	response = requests.get(image_url)
