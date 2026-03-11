@@ -1,7 +1,7 @@
 """PowerPoint Slide Generator - Streamlit Frontend"""
 
-from pprint import pprint
 from io import BytesIO
+import datetime as dt
 
 import streamlit as st
 from pydantic import ValidationError
@@ -10,6 +10,15 @@ from app.frontend.generate_ppt import generate_presentation
 from app.llm_logic.llm import PresentationOutput
 from app.llm_logic.unsplash_images import get_unsplash_image
 from app.generate_pp import generate_ppt
+
+import datetime as dt
+
+st.session_state.show_down_btn = False
+st.session_state.generated_presentation = None
+st.session_state.generated = False
+st.session_state.show_btn = False
+st.session_state.validated_model = None
+st.session_state.ppt_buffer = None
 
 def render_sidebar(form_state: FormState) -> None:
     """Render the sidebar with settings and options"""
@@ -126,31 +135,84 @@ def handle_generation(form_state: FormState) -> None:
         generate_btn = st.button("🚀 Generate Slides", type="primary", use_container_width=True)
     
     with col_gen2:
-        if st.session_state.get('generated', False):
-            presentation = st.session_state.get('generated_presentation')
-            validated_model = form_state.to_pydantic_model() 
-            if presentation:
-                print("ready to download")
-                # Generate the PPT file in memory
-                prs = generate_ppt(presentation, validated_model)
+        print("show button down") 
+        presentation_output = st.session_state["generated_presentation"]
+        generated = st.session_state['generated']
+        ppt_buffer = st.session_state["ppt_buffer"]
+        show_btn = st.session_state.show_down_btn
+        validated_model =  st.session_state['validated_model'] 
+
+        print("show btn: ", show_btn)
+        if validated_model:
+            filename = f"{validated_model.topic[:30].replace(' ', '_')}_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}.pptx"
+        else:
+            filename = "test"
+
+        print(filename)
+        print(presentation_output)
+        print(generated)
+        print("ppt buffer is none : ", ppt_buffer is None)
+
+        if ppt_buffer is not None:
+            st.download_button(
+                label="📥 Download PPTX",
+                data=st.session_state['ppt_buffer'],
+                file_name=filename,
+                mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                type="secondary",
+                use_container_width=True
+            )
+        else:
+            st.markdown("verkackt")
+
+
+
+
+
+        # generated = st.session_state.get('generated', False)
+        # print("Generated: ", generated)
+        # if generated:
+        #     presentation = st.session_state.get('generated_presentation')
+        #     validated_model = st.session_state.get('validated_model')
+
+        #     print("button show: ", presentation and validated_model)
+
+        #     show = st.session_state.show_down_btn
+        #     print("button show:: ", show)
+        #     if show:
+        #         # Generate PPT only once and cache it
+        #         if 'ppt_buffer' not in st.session_state:
+        #             print("generating ppt new becuase ppt buffer empty")
+        #             try:
+        #                 print("Generating PPT file...")
+        #                 prs = generate_ppt(presentation, validated_model)
+                        
+        #                 # Save to BytesIO buffer
+        #                 ppt_buffer = BytesIO()
+        #                 prs.save(ppt_buffer)
+        #                 ppt_buffer.seek(0)
+                        
+        #                 # Cache the buffer in session state
+        #                 st.session_state['ppt_buffer'] = ppt_buffer
+        #                 print("PPT file cached successfully")
+        #             except Exception as e:
+        #                 print(f"Error generating PPT: {e}")
+        #                 st.error(f"Failed to generate PPT file: {e}")
+        #                 st.session_state['ppt_buffer'] = None
                 
-                # Save to BytesIO buffer
-                ppt_buffer = BytesIO()
-                prs.save(ppt_buffer)
-                ppt_buffer.seek(0)
-                
-                # Generate filename
-                import datetime as dt
-                filename = f"{validated_model.topic[:30].replace(' ', '_')}_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}.pptx"
-                
-                st.download_button(
-                    label="📥 Download PPTX",
-                    data=ppt_buffer,
-                    file_name=filename,
-                    mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                    type="secondary",
-                    use_container_width=True
-                )
+        #         # Show download button if PPT was generated successfully
+        #         if st.session_state.get('ppt_buffer'):
+        #             print("ppt buffer is already there")
+        #             filename = f"{validated_model.topic[:30].replace(' ', '_')}_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}.pptx"
+                    
+        #             st.download_button(
+        #                 label="📥 Download PPTX",
+        #                 data=st.session_state['ppt_buffer'],
+        #                 file_name=filename,
+        #                 mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        #                 type="secondary",
+        #                 use_container_width=True
+        #             )
 
     
     # Handle generation
@@ -163,10 +225,13 @@ def handle_generation(form_state: FormState) -> None:
             st.session_state['validated_model'] = validated_model
             
             with st.spinner("✨ Generating your presentation..."):
-                # try:
+                # Clear any previously cached PPT
+                if 'ppt_buffer' in st.session_state:
+                    del st.session_state['ppt_buffer']
+                
                 print("Generating Presentation")
                 models = [
-                    "gemini-3.1-pro-preview",
+                    # "gemini-3.1-pro-preview",
                     "gemini-2.5-pro",
                     "gemini-2.5-flash",
                     "Gemini-2-flash"
@@ -178,15 +243,29 @@ def handle_generation(form_state: FormState) -> None:
                         break
                     except Exception as e:
                         print("Error on gen: ", e)
+                print("Pres generation done")
 
                 st.session_state["generated_presentation"] = presentation
                 st.session_state['generated'] = True
 
-                pprint(presentation.model_dump())
+                prs = generate_ppt(presentation, validated_model, save_localy=False)
+                print("ppt file created")
+                
+                # Save the Presentation object to a BytesIO buffer
+                ppt_buffer = BytesIO()
+                prs.save(ppt_buffer)
+                ppt_buffer.seek(0)
+                st.session_state["ppt_buffer"] = ppt_buffer
+                print("ppt saved to buffer")
 
+                st.session_state.show_down_btn = True
+
+                print("set all states")
                 
             st.success(f"✅ Generated {validated_model.number_of_slides} slides for '{validated_model.topic}'!")
-            
+            st.rerun()
+
+
             # Display the validated form data
             # with st.expander("📋 View Form Data"):
             #     st.json(validated_model.model_dump(mode='json'))
@@ -223,7 +302,14 @@ def render_slides_preview(form_state: FormState) -> None:
                 st.markdown(f"**Title:**  {slide.slide_title}")
                 for bp in slide.bullet_points: 
                     st.markdown(f"- {bp}")
-                st.image(get_unsplash_image(slide.image_query))
+                
+                # Display image if available
+                if slide.image_query:
+                    image_url = get_unsplash_image(slide.image_query)
+                    if image_url:
+                        st.image(image_url)
+                    else:
+                        st.caption(f"📷 Image not found for: {slide.image_query}")
     
     with tab2:
         st.markdown("""
