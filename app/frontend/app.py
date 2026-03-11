@@ -1,6 +1,7 @@
 """PowerPoint Slide Generator - Streamlit Frontend"""
 
 from pprint import pprint
+from io import BytesIO
 
 import streamlit as st
 from pydantic import ValidationError
@@ -8,7 +9,7 @@ from app.frontend.form_state import FormState, init_form_state
 from app.frontend.generate_ppt import generate_presentation
 from app.llm_logic.llm import PresentationOutput
 from app.llm_logic.unsplash_images import get_unsplash_image
-
+from app.generate_pp import generate_ppt
 
 def render_sidebar(form_state: FormState) -> None:
     """Render the sidebar with settings and options"""
@@ -126,7 +127,32 @@ def handle_generation(form_state: FormState) -> None:
     
     with col_gen2:
         if st.session_state.get('generated', False):
-            st.button("📥 Download PPTX", type="secondary", use_container_width=True)
+            presentation = st.session_state.get('generated_presentation')
+            validated_model = st.session_state.get('validated_model')
+            
+            if presentation and validated_model:
+                print("ready to download")
+                # Generate the PPT file in memory
+                prs = generate_ppt(presentation, validated_model)
+                
+                # Save to BytesIO buffer
+                ppt_buffer = BytesIO()
+                prs.save(ppt_buffer)
+                ppt_buffer.seek(0)
+                
+                # Generate filename
+                import datetime as dt
+                filename = f"{validated_model.topic[:30].replace(' ', '_')}_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}.pptx"
+                
+                st.download_button(
+                    label="📥 Download PPTX",
+                    data=ppt_buffer,
+                    file_name=filename,
+                    mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                    type="secondary",
+                    use_container_width=True
+                )
+
     
     # Handle generation
     if generate_btn:
@@ -141,7 +167,7 @@ def handle_generation(form_state: FormState) -> None:
                 # try:
                 print("Generating Presentation")
                 models = [
-                    "Gemini 3.1 Pro",
+                    "gemini-3.1-pro-preview",
                     "gemini-2.5-pro",
                     "gemini-2.5-flash",
                     "Gemini-2-flash"
