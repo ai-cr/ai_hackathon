@@ -8,11 +8,10 @@ from PIL import Image as PILImage
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 import datetime as dt
 
-
-# 16:9 dimensions
+# 16:9
 SLIDE_WIDTH  = Inches(13.33)
 SLIDE_HEIGHT = Inches(7.5)
 
@@ -53,6 +52,7 @@ def add_slide_number(slide, slide_number: int, text_color: RGBColor):
 
     box = slide.shapes.add_textbox(left, top, num_width, num_height)
     tf = box.text_frame
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
     p = tf.paragraphs[0]
     p.text = str(slide_number)
     run = p.runs[0]
@@ -78,6 +78,7 @@ def generate_ppt(prompt: PresentationOutput, presentation_prompt: PresentationPr
 
     title_box = title_slide.shapes.add_textbox(Inches(1.5), Inches(2.0), Inches(10.0), Inches(2.0))
     tf = title_box.text_frame
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
     tf.word_wrap = True
     p = tf.paragraphs[0]
     p.text = prompt.title
@@ -100,6 +101,7 @@ def generate_ppt(prompt: PresentationOutput, presentation_prompt: PresentationPr
         if meta_lines:
             meta_box = title_slide.shapes.add_textbox(Inches(1.5), Inches(4.2), Inches(10.0), Inches(1.5))
             tf_meta = meta_box.text_frame
+            tf_meta.vertical_anchor = MSO_ANCHOR.MIDDLE
             tf_meta.word_wrap = True
             for i, line in enumerate(meta_lines):
                 p_meta = tf_meta.paragraphs[0] if i == 0 else tf_meta.add_paragraph()
@@ -130,6 +132,7 @@ def generate_ppt(prompt: PresentationOutput, presentation_prompt: PresentationPr
         # Slide title
         title_box = slide.shapes.add_textbox(text_left, text_top, text_width, Inches(0.9))
         tf_title = title_box.text_frame
+        tf_title.vertical_anchor = MSO_ANCHOR.MIDDLE
         tf_title.word_wrap = True
         p_title = tf_title.paragraphs[0]
         p_title.text = slide_data.slide_title
@@ -143,6 +146,7 @@ def generate_ppt(prompt: PresentationOutput, presentation_prompt: PresentationPr
         bullet_height = content_bottom - bullet_top - Inches(0.1)
         bullet_box = slide.shapes.add_textbox(text_left, bullet_top, text_width, bullet_height)
         tf_bullets = bullet_box.text_frame
+        tf_bullets.vertical_anchor = MSO_ANCHOR.MIDDLE
         tf_bullets.word_wrap = True
         for i, bullet in enumerate(slide_data.bullet_points):
             p = tf_bullets.paragraphs[0] if i == 0 else tf_bullets.add_paragraph()
