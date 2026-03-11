@@ -176,7 +176,7 @@ def handle_generation(form_state: FormState) -> None:
                 
                 print("Generating Presentation")
                 models = [
-                    # "gemini-3.1-pro-preview",
+                    "gemini-3.1-pro-preview",
                     # "gemini-3.1-flash-lite-preview",
                     # "gemini-2.5-pro",
                     "gemini-2.5-flash-lite", # budget
