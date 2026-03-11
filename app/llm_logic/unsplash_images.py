@@ -12,7 +12,7 @@ headers = {
 
 def get_unsplash_image(query):
 	params = {
-	 "query": "technology",
+	 "query": query,
 	 "per_page": 1
 	}
 	response = requests.get(url, headers=headers, params=params)
