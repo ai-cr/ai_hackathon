@@ -20,6 +20,7 @@ def get_unsplash_image(query, retries=10):
 	 "query": query,
 	 "per_page": 1
 	}
+	print(query)
 	for _ in range(retries):
 		try:
 			response = requests.get(url, headers=headers, params=params)
