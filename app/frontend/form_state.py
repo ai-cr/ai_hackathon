@@ -26,7 +26,7 @@ class FormState:
     
     # Options
     include_images: bool = True
-    include_charts: bool = False
+    # include_charts: bool = False ignore for now - to complicated
     generate_speaker_notes: bool = True
     
     # Optional metadata
