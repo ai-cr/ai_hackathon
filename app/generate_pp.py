@@ -8,6 +8,7 @@ from PIL import Image as PILImage
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN
 import datetime as dt
 
 
@@ -80,6 +81,7 @@ def generate_ppt(prompt: PresentationOutput, presentation_prompt: PresentationPr
     tf.word_wrap = True
     p = tf.paragraphs[0]
     p.text = prompt.title
+    p.alignment = PP_ALIGN.CENTER
     run = p.runs[0]
     run.font.size = Pt(40)
     run.font.bold = True
@@ -102,6 +104,7 @@ def generate_ppt(prompt: PresentationOutput, presentation_prompt: PresentationPr
             for i, line in enumerate(meta_lines):
                 p_meta = tf_meta.paragraphs[0] if i == 0 else tf_meta.add_paragraph()
                 p_meta.text = line
+                p_meta.alignment = PP_ALIGN.CENTER
                 run_meta = p_meta.runs[0]
                 run_meta.font.size = Pt(16)
                 run_meta.font.color.rgb = text_color
